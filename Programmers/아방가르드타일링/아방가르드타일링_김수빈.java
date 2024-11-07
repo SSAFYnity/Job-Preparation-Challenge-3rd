@@ -13,8 +13,6 @@ class Solution {
                 dp[i] = (dp[i-1] + (dp[i-2] * 2 % MOD) + (dp[i-3] * 5 % MOD)) % MOD;
             }
         }
-        
-        
         return (int) dp[n];
     }
 }
