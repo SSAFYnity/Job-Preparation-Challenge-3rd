@@ -2,12 +2,15 @@ import heapq
 
 def solution(numbers):
         
-    # 각 번호로 부터 최소 시간 저장 (인덱스, 위치)
+    # 각 번호로 부터 최소 시간 저장
     def find_weights_dijkstra(idx):
+        # 시작 위치
         x, y = board[idx]
+        
         heap = []
-        # 왼손 위치, 현재 가중치
+        # 가중치, 현재 위치
         heapq.heappush(heap, (0, x, y))
+        # 자기자신 누르면 가중치 1
         dist[idx][x][y] = 1
 
         while heap:
@@ -38,6 +41,7 @@ def solution(numbers):
         visited = dict()
         # (왼손 번호, 오른손 번호, 다음 인덱스): 비용
         visited[(4, 6, 0)] = 0
+            
         while heap:
             # 현재 비용, 왼손 위치, 오른손 위치, 다음에 누를 숫자 인덱스
             cost, leftHand, rightHand, numIdx = heapq.heappop(heap)
@@ -55,21 +59,17 @@ def solution(numbers):
             number = int(numbers[numIdx])
             # 티이핑할 숫자 위치
             ex, ey = board[number]
-            
-            # 왼손 위치 인덱스
-            leftIdx = int(leftHand)  
+
             # 왼손 이동
             moveLeft = (number, rightHand, numIdx + 1)
-            moveLeftCost = cost + dist[leftIdx][ex][ey]
+            moveLeftCost = cost + dist[leftHand][ex][ey]
             if moveLeft not in visited or visited[moveLeft] > moveLeftCost:
                 visited[moveLeft] = moveLeftCost
                 heapq.heappush(heap, (moveLeftCost, number, rightHand, numIdx + 1))
                 
-            # 오른손 위치 인덱스
-            rightIdx = int(rightHand)
             # 오른손 이동
             moveRight = (leftHand, number, numIdx + 1)
-            moveRightCost = cost + dist[rightIdx][ex][ey]
+            moveRightCost = cost + dist[rightHand][ex][ey]
             if moveRight not in visited or visited[moveRight] > moveRightCost:
                 visited[moveRight] = moveRightCost
                 heapq.heappush(heap, (moveRightCost, leftHand, number, numIdx + 1))
