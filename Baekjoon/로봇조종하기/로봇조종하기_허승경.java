@@ -1,9 +1,7 @@
-package Nov_2024;
-
 import java.io.*;
 import java.util.*;
 
-public class BOJ_2169_1113 {
+public class Main {
     public static void main(String [] args) throws IOException{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
@@ -11,7 +9,8 @@ public class BOJ_2169_1113 {
         int m = Integer.parseInt(st.nextToken());
 
         int [][] arr = new int[n][m];
-        long [][] mars = new long[n+1][m+1];
+        long [][] mars = new long[n][m];
+
         for(int i = 0; i < n; i++){
             st = new StringTokenizer(br.readLine());
             for(int j = 0; j < m; j++){
@@ -19,28 +18,34 @@ public class BOJ_2169_1113 {
             }
         }
 
-        // 0: 왼, 1:아래, 2: 오
-        mars[1][1] = arr[0][0];
-
-        int [] dx = {0, -1, 0};  // 왼, 아래, 오
-        int [] dy = {-1, 0, 1};
-        for(int i = 1; i < n+1; i++){
-            for(int j = 1; j < m+1; j++){
-                long tmp = 0;
-                for(int k = 0; k < 3; k++){
-                    long tmp_sum = 0;
-                    int tx = i + dx[k];
-                    int ty = j + dy[k];
-
-                    if(tx < 1 || tx > n || ty < 1 || ty > m) continue;
-                    tmp_sum += mars[tx][ty] + arr[i-1][j-1];
-                    tmp = Math.max(tmp_sum, tmp);
-
-                }
-                mars[i][j] = Math.max(tmp, mars[i][j]);
-            }
+        // 첫 번째 행은 오른쪽으로 뻗어가기
+        mars[0][0] = arr[0][0];
+        for(int j = 1; j < m; j++){
+            mars[0][j] = mars[0][j-1] + arr[0][j];  // 이전값 + 현재값
         }
 
-        System.out.println(mars[n][m]);
+        for(int i = 1; i < n; i++){
+            // 왼 -> 오
+            long [] left = new long[m];     // 왼쪽에서 오른쪽 오는 경로 최댓값 저장
+            left[0] = mars[i-1][0] + arr[i][0]; // 행의 첫 번째 위치 -> 무조건 윗 행의 첫번째 열에서 밖에 못 옴
+            for(int j = 1; j < m; j++){
+                left[j] = Math.max(left[j-1], mars[i-1][j]) + arr[i][j];
+            }
+
+            // 오 -> 왼
+            long [] right = new long[m];    //오른쪽에서 왼쪽 가는 경로 최댓값 저장
+            right[m-1] = mars[i-1][m-1] + arr[i][m-1];  // 행의 마지막 위치 -> 무조건 윗행의 마지막 열에서 밖에 못 옴
+            for(int j = m-2; j > -1; j--){
+                right[j] = Math.max(right[j+1], mars[i-1][j]) + arr[i][j];
+            }
+
+            // 최종 합산 (두 방향의 값 중 최댓값이, 현재 위치의 최댓값)
+            for(int j = 0; j < m; j++){
+                mars[i][j] = Math.max(left[j], right[j]);
+            }
+
+        }
+
+        System.out.println(mars[n-1][m-1]);
     }
 }
