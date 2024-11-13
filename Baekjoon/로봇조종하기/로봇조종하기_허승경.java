@@ -43,7 +43,6 @@ public class Main {
             for(int j = 0; j < m; j++){
                 mars[i][j] = Math.max(left[j], right[j]);
             }
-
         }
 
         System.out.println(mars[n-1][m-1]);
