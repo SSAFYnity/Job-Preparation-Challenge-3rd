@@ -42,30 +42,24 @@ class Solution {
         
     }
     void checkSequence(int [] comb){
-        boolean flag = true;
-        int [] point = {-1, -1};
-        
-        for(int i = 0; i < comb.length-1; i+=2){
-            int a = comb[i];
-            int b = comb[i+1];
-            
-            if(a == b){ // 교집합끼리 같으면 안 됨
-                flag = false;
-                break;
-            }
-            
-            if(point[0] == -1 && point[1] == -1){   // 첫번째 원소일 경우 셋팅
-                point[0] = a;
-                point[1] = b;
-            }else{  // 교집합 체크
-                if(point[0] != a && point[0] != b && 
-                  point[1] != a && point[1] != b){
-                    // 하나도 해당되는 게 없음
-                    flag = false;
-                    break;
-                }
+        Map<Integer, Integer> elementCount = new HashMap<>();
+
+        for (int i = 0; i < comb.length - 1; i += 2) {
+            int x = comb[i];
+            int y = comb[i + 1];
+
+            if (x == y) return; // 서로 다른 두 요소로 이루어지지 않으면 반환
+
+            elementCount.put(x, elementCount.getOrDefault(x, 0) + 1);
+            elementCount.put(y, elementCount.getOrDefault(y, 0) + 1);
+        }
+
+        // 공통된 요소가 하나 이상 존재하는지 확인
+        for (int count : elementCount.values()) {
+            if (count >= comb.length / 2) {
+                maxLength = Math.max(maxLength, comb.length);
+                return;
             }
         }
-        if(flag) maxLength = comb.length;
     }
 }
