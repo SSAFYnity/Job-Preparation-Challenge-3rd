@@ -7,12 +7,13 @@ class Solution {
     public int solution(int[] a) {
         this.a = a;
         int n = a.length;
+        if(n < 2) return 0;
         if(a.length % 2  == 1) n -= 1;
         
         // 조합 만들기
         for(int i = n; i > 0; i = i-2){
             // 짝수개의 조합 만들기(최대 길이부터)
-            makeCombination(i, new int[n], 0, 0);
+            makeCombination(i, new int[i], 0, 0);
             
             if(maxLength != -1) break;
         }
@@ -34,32 +35,32 @@ class Solution {
         }
         
         for(int i = start; i < a.length; i++){
-            combi[idx] = a[i];
-            makeCombination(depth, combi, start+1, idx+1);
+            combi[idx] = i;     // 인덱스 저장
+            makeCombination(depth, combi, i+1, idx+1);
             if(maxLength != -1) break;
         }
         
     }
     void checkSequence(int [] comb){
-        // 교집합 원소 개수 구하기
         boolean flag = true;
+        int [] point = {-1, -1};
         
-        Stack<int []> stack = new Stack<>();
-        for(int i = 0; i < comb.length; i=i+2){
-            if(stack.isEmpty()){
-                stack.add(new int[]{comb[i], comb[i+1]});
-            }else{
-                int [] point = stack.peek();
-                // 교집합 조건 확인
-                if(point[0] == comb[i] || point[0] == comb[i+1] || 
-                  point[1] == comb[i] || point[1] == comb[i+1]){
-                    //앞뒤 확인
-                    if(comb[i] == comb[i+1]){
-                        flag = false;
-                        break;
-                    }
-                    
-                }else{
+        for(int i = 0; i < comb.length-1; i+=2){
+            int a = comb[i];
+            int b = comb[i+1];
+            
+            if(a == b){ // 교집합끼리 같으면 안 됨
+                flag = false;
+                break;
+            }
+            
+            if(point[0] == -1 && point[1] == -1){   // 첫번째 원소일 경우 셋팅
+                point[0] = a;
+                point[1] = b;
+            }else{  // 교집합 체크
+                if(point[0] != a && point[0] != b && 
+                  point[1] != a && point[1] != b){
+                    // 하나도 해당되는 게 없음
                     flag = false;
                     break;
                 }
