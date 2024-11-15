@@ -1,0 +1,76 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+	static int belt[];
+	static int beltM[];
+	static boolean robot[];
+	static boolean robotM[];
+	static int N, K, stage;
+	static int db;
+	public static void main(String[] args) throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringTokenizer st = new StringTokenizer(br.readLine());
+		N = Integer.parseInt(st.nextToken());
+		K = Integer.parseInt(st.nextToken());
+		db = 2 * N;
+		belt = new int[db + 1];
+		beltM = new int[db + 1];
+		robot = new boolean[N + 1];
+		robotM = new boolean[N + 1];
+		st = new StringTokenizer(br.readLine());
+		for (int i = 1; i <= db; i++) {
+			belt[i] = Integer.parseInt(st.nextToken());
+		}
+		Solution();
+
+		System.out.println(stage);
+	}
+
+	private static void Solution() {
+		while (true) {
+			stage++;
+			// 1. 벨트, 로봇 회전
+			for (int i = 1; i <= db; i++) {
+				int next = i % db + 1;
+				beltM[next] = belt[i];
+			}
+			for (int i = 1; i <= N; i++) {
+				int next = i % N + 1;
+				robotM[next] = robot[i];
+			}
+			for (int i = 1; i <= db; i++) {
+				belt[i] = beltM[i];
+			}
+			for (int i = 1; i <= N; i++) {
+				robot[i] = robotM[i];
+			}
+			if (robot[N]) robot[N] = false; // 로봇이 내리는 위치에 도달하면 그 즉시 내린다.
+			// 2. 이동
+			for (int i = N - 1; i >= 1; i--) {
+				if (robot[i]) { // 로봇이 있을 때
+					if (!robot[i + 1] && belt[i + 1] >= 1) { // 이동하려는 칸에 로봇이 없고 내구도가 1 이상이라면
+						robot[i + 1] = true;
+						robot[i] = false;
+						belt[i + 1]--;
+						if (robot[N]) robot[N] = false; // 로봇이 내리는 위치에 도달하면 그 즉시 내린다.
+					}
+				}
+			}
+			// 3. 올리기
+			if (belt[1] != 0) {
+				robot[1] = true;
+				belt[1]--;
+			}
+			// 4. 종료 가능한지 체크
+			int cnt = 0;
+			for (int i = 1; i <= db; i++) {
+				if (belt[i] == 0)
+					cnt++;
+				if (cnt >= K) {
+					return;
+				}
+			}
+		}
+	}
+}
