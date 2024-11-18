@@ -14,6 +14,7 @@ public class Main {
                 target += index;
             }
         }
+
         for (int index = M; index < N+1; index++) {
             if(!check[index]) {
                 System.out.println(index);
