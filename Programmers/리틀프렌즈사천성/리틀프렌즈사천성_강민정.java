@@ -19,10 +19,10 @@ class Solution {
     }
 
     /*
-        한번 꺾기
+        좌 또는 우로 한번 꺾기
     */
-    public boolean removeTurnLine(int x, int y, char[][] boardArr) {
-        for(int d=0; d<4; d++) {
+    public boolean removeTurnLineLeftOrRight(int x, int y, char[][] boardArr) {
+        for(int d=2; d<4; d++) {
             int nx = dx[d] + x;
             int ny = dy[d] + y;
 
@@ -36,7 +36,6 @@ class Solution {
                 int topNy = ny;
                 while(topNx >= 0) {
                     if(boardArr[topNx][topNy] == boardArr[x][y]) {
-                        lst.add(boardArr[x][y]);
                         boardArr[topNx][topNy] = '.';
                         boardArr[x][y] = '.';
                         return true;
@@ -51,7 +50,6 @@ class Solution {
                 int bottomNy = ny;
                 while(bottomNx < rowSize) {
                     if(boardArr[bottomNx][bottomNy] == boardArr[x][y]) {
-                        lst.add(boardArr[x][y]);
                         boardArr[bottomNx][bottomNy] = '.';
                         boardArr[x][y] = '.';
                         return true;
@@ -59,6 +57,54 @@ class Solution {
                         break;
                     }
                     bottomNx++;
+                }
+
+                nx += dx[d];
+                ny += dy[d];
+            }
+        }
+        return false;
+    }
+
+    /*
+        위 또는 아래로 한번 꺾기
+    */
+    public boolean removeTurnLineUpOrDown(int x, int y, char[][] boardArr) {
+        for(int d=0; d<2; d++) {
+            int nx = dx[d] + x;
+            int ny = dy[d] + y;
+
+            if(!isValid(nx, ny) || boardArr[nx][ny] == '*') {
+                continue;
+            }
+
+            while(isValid(nx, ny) && boardArr[nx][ny] != '*' && boardArr[nx][ny] == '.') {
+                // 좌로 꺾기
+                int topNx = nx;
+                int topNy = ny;
+                while(topNy >= 0) {
+                    if(boardArr[topNx][topNy] == boardArr[x][y]) {
+                        boardArr[topNx][topNy] = '.';
+                        boardArr[x][y] = '.';
+                        return true;
+                    } else if(boardArr[topNx][topNy] != '.') {
+                        break;
+                    }
+                    topNy--;
+                }
+
+                // 우로 꺾기
+                int bottomNx = nx;
+                int bottomNy = ny;
+                while(bottomNy < colSize) {
+                    if(boardArr[bottomNx][bottomNy] == boardArr[x][y]) {
+                        boardArr[bottomNx][bottomNy] = '.';
+                        boardArr[x][y] = '.';
+                        return true;
+                    } else if(boardArr[bottomNx][bottomNy] != '.') {
+                        break;
+                    }
+                    bottomNy++;
                 }
 
                 nx += dx[d];
@@ -78,7 +124,6 @@ class Solution {
 
             while(isValid(nx, ny)) {
                 if(boardArr[nx][ny] == boardArr[x][y]) {      // 제거할 타일을 찾음
-                    lst.add(boardArr[x][y]);
                     boardArr[x][y] = '.';
                     boardArr[nx][ny] = '.';
                     return true;
@@ -129,7 +174,6 @@ class Solution {
 
         while(true) {
             boolean isEnd = true;
-            lst = new ArrayList();
             for(char ch : treeSet) {
                 int x = pos1[ch - 'A'][0];
                 int y = pos1[ch - 'A'][1];
@@ -141,7 +185,12 @@ class Solution {
                     answer.append(ch);
                     treeSet.remove(ch);
                     break;
-                } else if (removeTurnLine(x, y, boardArr)) {
+                } else if (removeTurnLineUpOrDown(x, y, boardArr)) {
+                    isEnd = false;
+                    answer.append(ch);
+                    treeSet.remove(ch);
+                    break;
+                } else if (removeTurnLineLeftOrRight(x, y, boardArr)) {
                     isEnd = false;
                     answer.append(ch);
                     treeSet.remove(ch);
