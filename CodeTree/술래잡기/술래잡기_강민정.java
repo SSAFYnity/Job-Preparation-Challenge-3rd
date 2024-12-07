@@ -33,6 +33,7 @@ public class Main {
     static int answer;      // 술래의 총 점수
     static Position monster;   // 술래
     static List<Direction> snail;    // 술래가 나선형으로 움직였을 때 위치 좌표들
+    static List<Direction> reversedSnail;       // 술래가 중앙을 향해 나선형으로 움직였을 때 위치 좌표들
     static int snailIdx;
     static boolean isGo;        // 중앙에서 출발했는지
     // 센터 좌표
@@ -51,26 +52,27 @@ public class Main {
         return 0 <= x && x < n && 0 <= y && y < n;
     }
 
-    public static void initSnail() {
-        int curX = monster.x;
-        int curY = monster.y;
+    public static void initSnail(int curX, int curY) {
         int d = 1;  // 이동 거리
         int idx = 0;
         int cnt = 0;
         boolean flag = true;
         snail.add(new Direction(curX, curY, idx));
+        reversedSnail.add(new Direction(curX, curY, (idx + 2) % 4));
 
         while(flag) {
             for(int i=0; i<d; i++) {
                 curX += DX[idx];
                 curY += DY[idx];
-                if(curX < 0 || curY < 0) {
+                if(snail.size() == n*n) {
                     flag = false;
                     break;
                 }
                 snail.add(new Direction(curX, curY, idx));
+                reversedSnail.add(new Direction(curX, curY, (idx + 2) % 4));
             }
             cnt++;
+            reversedSnail.get(reversedSnail.size() - 1).d = (idx + 2) % 4;
             idx = (idx + 1) % 4; // 방향 변경
             snail.get(snail.size() - 1).d = idx;
             if(cnt == 2) {
@@ -93,15 +95,22 @@ public class Main {
             isGo = true;
         }
 
+        //snailIdx = (snailIdx + 1) % (n * n);
         // 끝을 향해 이동
-        if(isGo) {
+        /*if(isGo) {
             snailIdx++;
         } else {    // 중앙을 향해 이동
             snailIdx--;
-        }
+        }*/
 
-        Direction tmp = snail.get(snailIdx);
-        monster = new Position(tmp.x, tmp.y);
+        //Direction tmp = snail.get(snailIdx);
+        if(isGo) {
+            snailIdx++;
+            monster = new Position(snail.get(snailIdx).x, snail.get(snailIdx).y);
+        } else {
+            snailIdx--;
+            monster = new Position(reversedSnail.get(snailIdx).x, reversedSnail.get(snailIdx).y);
+        }
     }
 
     /*
@@ -124,7 +133,12 @@ public class Main {
     public static int gotcha() {
         int cnt = 0;        // 잡은 도망자 수
         // 현재 있는 칸을 포함하여 3칸을 내다보기
-        int curD = snail.get(snailIdx).d;       // 현재 바라보는 방향
+        int curD;
+        if(isGo) {
+            curD = snail.get(snailIdx).d;       // 현재 바라보는 방향
+        } else {
+            curD = reversedSnail.get(snailIdx).d;
+        }
         int curX = monster.x;
         int curY = monster.y;
 
@@ -141,9 +155,30 @@ public class Main {
     }
 
     /*
-        도망자가 움직인다
+        한 명의 도망자가 움직인다
+     */
+    public static void run(int i, int j, int d) {
+        int nx = DX[d] + i;
+        int ny = DY[d] + j;
+        // 격자를 벗어난 경우
+        if(!isValid(nx, ny)) {
+            // 반대 방향으로 튼다
+            d = (d + 2) % 4;
+            nx = i + DX[d];
+            ny = j + DY[d];
+        }
+        // 술래가 있으면
+        if(monster.x == nx && monster.y == ny) {
+            newhider[i][j].add(d);
+        } else {
+            newhider[nx][ny].add(d);
+        }
+    }
+
+    /*
+        도망자들이 움직인다
     */
-    public static void run() {
+    public static void runAll() {
         // 도망자가 움직였을 때 저장하는 리스트 배열 초기화
         for(int i=0; i<n; i++) {
             for(int j=0; j<n; j++) {
@@ -158,29 +193,8 @@ public class Main {
                     // 움직이지 않아도 되는 도망자라면
                     if(manhattanDistance(i, j) > 3) {
                         newhider[i][j].add(d);      // 현재 위치 그대로 넣기
-                        continue;
-                    }
-                    int nx = DX[d] + i;
-                    int ny = DY[d] + j;
-                    // 격자를 벗어나지 않는 경우
-                    if(isValid(nx, ny)) {
-                        // 움직이려는 칸에 술래가 있다면
-                        if(monster.x == nx && monster.y == ny) {
-                            newhider[i][j].add(d);      // 현재 위치 그대로 넣기
-                            continue;
-                        }
-                        newhider[nx][ny].add(d);
-                    } else {        // 격자를 벗어난 경우
-                        // 반대 방향으로 튼다
-                        int newD = (d + 2) % 4;
-                        nx = i + DX[newD];
-                        ny = j + DY[newD];
-                        // 술래가 있으면
-                        if(monster.x == nx && monster.y == ny) {
-                            newhider[i][j].add(d);
-                            continue;
-                        }
-                        newhider[nx][ny].add(newD);
+                    } else {
+                        run(i, j, d);
                     }
                 }
             }
@@ -205,6 +219,7 @@ public class Main {
         CENTER_Y = n / 2;
         monster = new Position(CENTER_X, CENTER_Y);   // 정가운데 위치
         snail = new ArrayList();
+        reversedSnail = new ArrayList();
 
         // 도망자의 위치와 이동 방법을 입력 받기
         hider = new ArrayList[n][n];
@@ -229,12 +244,12 @@ public class Main {
             tree[Integer.parseInt(st.nextToken()) - 1][Integer.parseInt(st.nextToken()) - 1] = true;
         }
 
-        initSnail();
+        initSnail(monster.x, monster.y);
         isGo = true;        // 중앙에서 출발한다
 
         for(int turn=1; turn<=k; turn++) {
             // 도망자가 움직인다
-            run();
+            runAll();
             // 몬스터가 움직인다
             monsterMove();
             // 도망자를 잡는다
